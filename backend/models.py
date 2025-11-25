@@ -24,3 +24,14 @@ class SubTask(SubTaskBase, table=True):
     goal_id: int = Field(foreign_key="goal.id")
 
     goal: Goal = Relationship(back_populates="tasks")
+
+
+class SubTaskRead(SubTaskBase):
+    id: int
+    goal_id: int
+
+
+class GoalRead(GoalBase):
+    id: int
+    created_at: datetime
+    tasks: List[SubTaskRead] = []
