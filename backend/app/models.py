@@ -35,3 +35,10 @@ class GoalRead(GoalBase):
     id: int
     created_at: datetime
     tasks: List[SubTaskRead] = []
+
+
+class PaginatedGoalRead(SQLModel):
+    total: int
+    page: int
+    size: int
+    items: List[GoalRead]

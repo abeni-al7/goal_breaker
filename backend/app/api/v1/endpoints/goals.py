@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
@@ -6,7 +5,7 @@ from app.infrastructure.database import get_session
 from app.infrastructure.ai_client import AIClient
 from app.repositories.goal_repository import GoalRepository
 from app.services.goal_service import GoalService
-from app.models import GoalRead, GoalBase
+from app.models import GoalRead, GoalBase, PaginatedGoalRead
 
 router = APIRouter()
 
@@ -28,9 +27,13 @@ def create_goal(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=List[GoalRead])
-def read_goals(service: GoalService = Depends(get_goal_service)):
-    return service.get_all_goals()
+@router.get("/", response_model=PaginatedGoalRead)
+def read_goals(
+    page: int = 1,
+    limit: int = 10,
+    service: GoalService = Depends(get_goal_service)
+):
+    return service.get_all_goals(page=page, limit=limit)
 
 
 @router.get("/{goal_id}", response_model=GoalRead)

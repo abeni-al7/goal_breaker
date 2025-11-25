@@ -25,9 +25,18 @@ class GoalRepository:
     def get_goal_by_id(self, goal_id: int) -> Optional[Goal]:
         return self.session.get(Goal, goal_id)
 
-    def get_all_goals(self) -> List[Goal]:
-        statement = select(Goal).order_by(Goal.created_at.desc())
+    def get_all_goals(self, skip: int = 0, limit: int = 10) -> List[Goal]:
+        statement = (
+            select(Goal)
+            .order_by(Goal.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
         return self.session.exec(statement).all()
+
+    def count_goals(self) -> int:
+        statement = select(Goal)
+        return len(self.session.exec(statement).all())
 
     def delete_goal(self, goal: Goal) -> None:
         self.session.delete(goal)

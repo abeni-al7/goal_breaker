@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, Any
 from app.models import Goal, SubTask
 from app.repositories.goal_repository import GoalRepository
 from app.infrastructure.ai_client import AIClient
@@ -34,8 +34,16 @@ class GoalService:
         self.goal_repository.session.refresh(created_goal)
         return created_goal
 
-    def get_all_goals(self) -> List[Goal]:
-        return self.goal_repository.get_all_goals()
+    def get_all_goals(self, page: int = 1, limit: int = 10) -> Dict[str, Any]:
+        skip = (page - 1) * limit
+        goals = self.goal_repository.get_all_goals(skip=skip, limit=limit)
+        total = self.goal_repository.count_goals()
+        return {
+            "total": total,
+            "page": page,
+            "size": limit,
+            "items": goals
+        }
 
     def get_goal(self, goal_id: int) -> Goal:
         return self.goal_repository.get_goal_by_id(goal_id)
