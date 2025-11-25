@@ -9,7 +9,7 @@ class GoalBase(SQLModel):
 
 class Goal(GoalBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
     tasks: List["SubTask"] = Relationship(back_populates="goal")
 

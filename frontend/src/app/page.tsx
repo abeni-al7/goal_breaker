@@ -1,43 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
-
-interface SubTask {
-  description: string;
-  complexity_score: number;
-}
-
-interface Goal {
-  id: number;
-  description: string;
-  tasks: SubTask[];
-}
+import { AlertCircle, Sparkles } from "lucide-react";
+import { GoalInputForm } from "@/components/goals/GoalInputForm";
+import { GoalResultDisplay } from "@/components/goals/GoalResultDisplay";
+import { createGoal } from "@/lib/api";
+import { Goal } from "@/types";
 
 export default function Home() {
-  const [goalInput, setGoalInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Goal | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!goalInput.trim()) return;
-
+  const handleGoalSubmit = async (goalInput: string) => {
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const response = await axios.post("http://localhost:8000/goals", {
-        description: goalInput,
-      });
-      setResult(response.data);
+      const data = await createGoal(goalInput);
+      setResult(data);
     } catch (err: any) {
       console.error(err);
       setError(
@@ -49,89 +32,45 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-slate-50 dark:bg-slate-950">
-      <div className="w-full max-w-2xl space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl text-slate-900 dark:text-slate-50">
-            Smart Goal Breaker
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400">
-            Turn your vague goals into actionable steps with AI.
-          </p>
+    <div className="container mx-auto px-4 py-12 md:py-24 max-w-5xl">
+      <div className="text-center space-y-6 mb-12">
+        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
+          <Sparkles className="mr-1 h-3 w-3" />
+          AI Powered
         </div>
+        <h1 className="text-4xl font-extrabold tracking-tight lg:text-6xl text-slate-900 dark:text-slate-50">
+          Turn Vague Goals into <br className="hidden sm:inline" />
+          <span className="text-blue-600 dark:text-blue-400">
+            Actionable Plans
+          </span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          Stop dreaming and start doing. Our AI agent breaks down your complex
+          ambitions into simple, manageable steps.
+        </p>
+      </div>
 
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-          <CardHeader>
-            <CardTitle>What do you want to achieve?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="flex gap-4">
-              <Input
-                placeholder="e.g., Launch a startup, Learn Python..."
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                disabled={loading}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={loading || !goalInput.trim()}>
-                {loading ? "Breaking..." : "Break it down"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="max-w-2xl mx-auto mb-16">
+        <GoalInputForm onSubmit={handleGoalSubmit} loading={loading} />
 
         {error && (
-          <div className="p-4 rounded-md bg-red-50 text-red-900 flex items-center gap-2 border border-red-200">
+          <div className="mt-6 p-4 rounded-md bg-red-50 text-red-900 flex items-center gap-2 border border-red-200 animate-in fade-in slide-in-from-top-2">
             <AlertCircle className="h-5 w-5" />
             <p>{error}</p>
           </div>
         )}
-
-        {loading && (
-          <div className="space-y-4">
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-24 w-full rounded-xl" />
-          </div>
-        )}
-
-        {result && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-2 text-xl font-semibold text-slate-800 dark:text-slate-200">
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
-              <h2>Plan for: "{result.description}"</h2>
-            </div>
-
-            <div className="grid gap-4">
-              {result.tasks.map((task, index) => (
-                <Card key={index} className="overflow-hidden border-l-4 border-l-blue-500">
-                  <CardContent className="p-6 flex justify-between items-center gap-4">
-                    <div className="space-y-1">
-                      <h3 className="font-medium text-lg leading-none">
-                        Step {index + 1}
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-400">
-                        {task.description}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800 p-3 rounded-lg min-w-[80px]">
-                      <span className="text-xs font-medium text-slate-500 uppercase">
-                        Complexity
-                      </span>
-                      <span className={`text-2xl font-bold ${
-                        task.complexity_score > 7 ? "text-red-500" : 
-                        task.complexity_score > 4 ? "text-yellow-500" : "text-green-500"
-                      }`}>
-                        {task.complexity_score}/10
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
-    </main>
+
+      {loading && (
+        <div className="max-w-3xl mx-auto space-y-4">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+      )}
+
+      {result && <GoalResultDisplay result={result} />}
+    </div>
   );
 }
+
