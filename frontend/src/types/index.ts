@@ -9,3 +9,10 @@ export interface Goal {
   created_at: string;
   tasks: SubTask[];
 }
+
+export interface PaginatedResponse<T> {
+  total: number;
+  page: number;
+  size: number;
+  items: T[];
+}
