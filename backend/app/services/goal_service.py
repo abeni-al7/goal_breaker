@@ -29,7 +29,7 @@ class GoalService:
 
         # 4. Save SubTasks
         self.goal_repository.create_subtasks(subtasks)
-        
+
         # 5. Refresh goal to include tasks (SQLModel relationship)
         self.goal_repository.session.refresh(created_goal)
         return created_goal
